@@ -1,0 +1,120 @@
+<!-- admin.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel Administrativo</title>
+  <style>
+    body { font-family: Arial; margin: 30px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    button { margin: 0 5px; padding: 5px 10px; }
+    .logout { margin-bottom: 20px; }
+    .status-aprovado { color: green; font-weight: bold; }
+    .status-pendente { color: orange; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Painel Administrativo</h1>
+  <button class="logout" onclick="logout()">Sair</button>
+  <table>
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Vendedor</th>
+        <th>Comprador</th>
+        <th>Celular</th>
+        <th>Números</th>
+        <th>Status</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="tabelaApostas"></tbody>
+  </table>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDj1buTT6ZI0SDC7uflOXmT6xCAwg-e3nA",
+      authDomain: "bolao-supersorte.firebaseapp.com",
+      projectId: "bolao-supersorte",
+      storageBucket: "bolao-supersorte.firebasestorage.app",
+      messagingSenderId: "847695287970",
+      appId: "1:847695287970:web:14bae5edcb9e621e2fe9fb",
+      databaseURL: "https://bolao-supersorte-default-rtdb.firebaseio.com"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    const admins = ["iagotk@yahoo.com.br"];
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user || !admins.includes(user.email)) {
+        alert("Acesso negado. Somente administradores.");
+        window.location.href = 'index.html';
+      } else {
+        carregarApostas();
+      }
+    });
+
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = 'index.html';
+      });
+    }
+
+    function carregarApostas() {
+      const tabela = document.getElementById("tabelaApostas");
+      firebase.database().ref("apostas").on("value", snapshot => {
+        tabela.innerHTML = "";
+        snapshot.forEach(child => {
+          const aposta = child.val();
+          const id = child.key;
+          const status = aposta.status || "pendente";
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${aposta.data || "-"}</td>
+            <td>${aposta.vendedor || "-"}</td>
+            <td>${aposta.comprador || "-"}</td>
+            <td>${aposta.celular || "-"}</td>
+            <td>${(aposta.numeros || []).join(", ")}</td>
+            <td class="${status === 'aprovado' ? 'status-aprovado' : 'status-pendente'}">${status}</td>
+            <td>
+              <button onclick="aprovar('${id}')">Aprovar</button>
+              <button onclick="reprovar('${id}')">Reprovar</button>
+              <button onclick="editar('${id}', ${JSON.stringify(aposta.numeros)})">Editar</button>
+            </td>
+          `;
+          tabela.appendChild(tr);
+        });
+      });
+    }
+
+    function aprovar(id) {
+      firebase.database().ref("apostas/" + id).update({ status: "aprovado" });
+    }
+
+    function reprovar(id) {
+      firebase.database().ref("apostas/" + id).update({ status: "pendente" });
+    }
+
+    function editar(id, numerosAntigos) {
+      const novos = prompt("Digite 10 números separados por vírgula:", numerosAntigos.join(", "));
+      if (!novos) return;
+      const lista = novos.split(",").map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+      if (lista.length !== 10) {
+        alert("Você deve informar exatamente 10 números válidos.");
+        return;
+      }
+      firebase.database().ref("apostas/" + id).update({ numeros: lista });
+    }
+  </script>
+</body>
+</html>
