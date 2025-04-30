@@ -6,7 +6,19 @@
   <title>Painel Administrativo</title>
   <style>
     body { font-family: Arial; margin: 30px; }
-    .stats { margin-bottom: 20px; font-weight: bold; }
+    .stats { margin-bottom: 20px; display: flex; gap: 20px; justify-content: center; }
+    .stat-box {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      color: #000;
+      text-align: center;
+      min-width: 120px;
+    }
+    .total-box { background-color: #e2e3e5; }
+    .aprovado-box { background-color: #d4edda; color: #155724; }
+    .pendente-box { background-color: #fff3cd; color: #856404; }
+
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     button { margin: 0 5px; padding: 5px 10px; }
@@ -14,17 +26,19 @@
     .status-aprovado { color: green; font-weight: bold; }
     .status-pendente { color: orange; font-weight: bold; }
     .export-buttons { margin-top: 10px; margin-bottom: 20px; }
-    .filtros { margin-top: 10px; margin-bottom: 20px; }
+    .filtros { margin-top: 10px; margin-bottom: 20px; text-align: center; }
   </style>
 </head>
 <body>
-  <h1>Painel Administrativo</h1>
-  <button class="logout" onclick="logout()">Sair</button>
+  <h1 style="text-align:center">Painel Administrativo</h1>
+  <div style="text-align: center">
+    <button class="logout" onclick="logout()">Sair</button>
+  </div>
 
   <div class="stats">
-    Total de jogos: <span id="total">0</span> |
-    Aprovados: <span id="aprovados">0</span> |
-    Pendentes: <span id="pendentes">0</span>
+    <div class="stat-box total-box">Total de jogos:<br><span id="total">0</span></div>
+    <div class="stat-box aprovado-box">Aprovados:<br><span id="aprovados">0</span></div>
+    <div class="stat-box pendente-box">Pendentes:<br><span id="pendentes">0</span></div>
   </div>
 
   <div class="filtros">
@@ -36,10 +50,12 @@
       <option value="aprovado">Aprovado</option>
       <option value="pendente">Pendente</option>
     </select>
+    <label style="margin-left: 20px;">Filtrar por vendedor:</label>
+    <input type="text" id="filtroVendedor" placeholder="Nome do vendedor">
     <button onclick="carregarApostas()">Aplicar Filtro</button>
   </div>
 
-  <div class="export-buttons">
+  <div class="export-buttons" style="text-align: center">
     <button onclick="exportarCSV()">Exportar para Excel (.CSV)</button>
     <button onclick="exportarParaDrive()">Enviar para Google Drive (JSON)</button>
   </div>
@@ -63,7 +79,6 @@
   <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-database-compat.js"></script>
-
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDj1buTT6ZI0SDC7uflOXmT6xCAwg-e3nA",
@@ -104,6 +119,7 @@
       const pendentesEl = document.getElementById("pendentes");
       const filtroData = document.getElementById("filtroData").value;
       const filtroStatus = document.getElementById("filtroStatus").value;
+      const filtroVendedor = document.getElementById("filtroVendedor").value.toLowerCase();
 
       firebase.database().ref("apostas").once("value", snapshot => {
         tabela.innerHTML = "";
@@ -114,9 +130,11 @@
           const aposta = child.val();
           const id = child.key;
           const status = aposta.status || "pendente";
+          const vendedor = aposta.vendedor || "";
 
           if (filtroData && aposta.data !== filtroData) return;
           if (filtroStatus && status !== filtroStatus) return;
+          if (filtroVendedor && !vendedor.toLowerCase().includes(filtroVendedor)) return;
 
           total++;
           if (status === "aprovado") aprovados++;
@@ -127,7 +145,7 @@
           const tr = document.createElement("tr");
           tr.innerHTML = `
             <td>${aposta.data || "-"}</td>
-            <td>${aposta.vendedor || "-"}</td>
+            <td>${vendedor}</td>
             <td>${aposta.comprador || "-"}</td>
             <td>${aposta.celular || "-"}</td>
             <td>${(aposta.numeros || []).join(", ")}</td>
@@ -145,49 +163,6 @@
         aprovadosEl.textContent = aprovados;
         pendentesEl.textContent = pendentes;
       });
-    }
-
-    function aprovar(id) {
-      firebase.database().ref("apostas/" + id).update({ status: "aprovado" });
-    }
-
-    function reprovar(id) {
-      firebase.database().ref("apostas/" + id).update({ status: "pendente" });
-    }
-
-    function editar(id, numerosAntigos) {
-      const novos = prompt("Digite 10 números separados por vírgula:", numerosAntigos.join(", "));
-      if (!novos) return;
-      const lista = novos.split(",").map(n => parseInt(n.trim())).filter(n => !isNaN(n));
-      if (lista.length !== 10) {
-        alert("Você deve informar exatamente 10 números válidos.");
-        return;
-      }
-      firebase.database().ref("apostas/" + id).update({ numeros: lista });
-    }
-
-    function exportarCSV() {
-      let csv = "Data,Vendedor,Comprador,Celular,Números,Status\n";
-      apostasData.forEach(ap => {
-        csv += `"${ap.data || ''}","${ap.vendedor || ''}","${ap.comprador || ''}","${ap.celular || ''}","${(ap.numeros || []).join(" - ")}","${ap.status || 'pendente'}"\n`;
-      });
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'apostas.csv';
-      a.click();
-    }
-
-    function exportarParaDrive() {
-      const json = JSON.stringify(apostasData, null, 2);
-      const blob = new Blob([json], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'apostas.json';
-      a.click();
-      alert("Arquivo JSON pronto para enviar manualmente para o Google Drive.");
     }
   </script>
 </body>
