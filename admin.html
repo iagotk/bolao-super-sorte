@@ -164,6 +164,30 @@
         pendentesEl.textContent = pendentes;
       });
     }
-  </script>
+  function aprovar(id) {
+  firebase.database().ref("apostas/" + id).update({ status: "aprovado" }).then(() => {
+    carregarApostas();
+  });
+}
+
+function reprovar(id) {
+  firebase.database().ref("apostas/" + id).update({ status: "pendente" }).then(() => {
+    carregarApostas();
+  });
+}
+
+function editar(id, numerosAntigos) {
+  const novos = prompt("Digite 10 números separados por vírgula:", numerosAntigos.join(", "));
+  if (!novos) return;
+  const lista = novos.split(",").map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+  if (lista.length !== 10) {
+    alert("Você deve informar exatamente 10 números válidos.");
+    return;
+  }
+  firebase.database().ref("apostas/" + id).update({ numeros: lista }).then(() => {
+    carregarApostas();
+  });
+}
+</script>
 </body>
 </html>
