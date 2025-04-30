@@ -13,6 +13,7 @@
     .logout { margin-bottom: 20px; }
     .status-aprovado { color: green; font-weight: bold; }
     .status-pendente { color: orange; font-weight: bold; }
+    .export-buttons { margin-top: 10px; margin-bottom: 20px; }
   </style>
 </head>
 <body>
@@ -23,6 +24,11 @@
     Total de jogos: <span id="total">0</span> |
     Aprovados: <span id="aprovados">0</span> |
     Pendentes: <span id="pendentes">0</span>
+  </div>
+
+  <div class="export-buttons">
+    <button onclick="exportarCSV()">Exportar para Excel (.CSV)</button>
+    <button onclick="exportarParaDrive()">Enviar para Google Drive (JSON)</button>
   </div>
 
   <table>
@@ -77,6 +83,8 @@
       });
     }
 
+    let apostasData = [];
+
     function carregarApostas() {
       const tabela = document.getElementById("tabelaApostas");
       const totalEl = document.getElementById("total");
@@ -85,6 +93,7 @@
 
       firebase.database().ref("apostas").on("value", snapshot => {
         tabela.innerHTML = "";
+        apostasData = [];
         let total = 0;
         let aprovados = 0;
         let pendentes = 0;
@@ -97,6 +106,8 @@
           total++;
           if (status === "aprovado") aprovados++;
           else pendentes++;
+
+          apostasData.push({ id, ...aposta });
 
           const tr = document.createElement("tr");
           tr.innerHTML = `
@@ -138,6 +149,30 @@
         return;
       }
       firebase.database().ref("apostas/" + id).update({ numeros: lista });
+    }
+
+    function exportarCSV() {
+      let csv = "Data,Vendedor,Comprador,Celular,Números,Status\n";
+      apostasData.forEach(ap => {
+        csv += `"${ap.data || ''}","${ap.vendedor || ''}","${ap.comprador || ''}","${ap.celular || ''}","${(ap.numeros || []).join(" - ")}","${ap.status || 'pendente'}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'apostas.csv';
+      a.click();
+    }
+
+    function exportarParaDrive() {
+      const json = JSON.stringify(apostasData, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'apostas.json';
+      a.click();
+      alert("Arquivo JSON pronto para enviar manualmente para o Google Drive.");
     }
   </script>
 </body>
