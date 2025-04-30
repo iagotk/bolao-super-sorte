@@ -8,7 +8,7 @@
       font-family: Arial, sans-serif;
       margin: 30px;
     }
-    input[type="text"], input[type="tel"] {
+    input[type="text"], input[type="tel"], input[type="date"] {
       margin-bottom: 10px;
       padding: 5px;
       width: 250px;
@@ -41,6 +41,9 @@
 <body>
   <h1>Cadastro de Aposta - Bolão SuperSorte</h1>
   <form id="apostaForm">
+    <label>Data da Aposta: *</label><br>
+    <input type="date" id="data" required><br>
+
     <label>Vendedor:</label><br>
     <input type="text" id="vendedor"><br>
 
@@ -60,6 +63,7 @@
   <table id="tabelaApostas">
     <thead>
       <tr>
+        <th>Data</th>
         <th>Vendedor</th>
         <th>Comprador</th>
         <th>Celular</th>
@@ -74,7 +78,6 @@
   <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-database-compat.js"></script>
 
   <script>
-    // Configuração do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDj1buTT6ZI0SDC7uflOXmT6xCAwg-e3nA",
       authDomain: "bolao-supersorte.firebaseapp.com",
@@ -85,11 +88,9 @@
       databaseURL: "https://bolao-supersorte-default-rtdb.firebaseio.com"
     };
 
-    // Inicializa o Firebase
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // Gera os checkboxes de 1 a 60
     const numerosDiv = document.getElementById("numeros");
     for (let i = 1; i <= 60; i++) {
       const label = document.createElement("label");
@@ -102,7 +103,6 @@
       numerosDiv.appendChild(label);
     }
 
-    // Limita a seleção a 10 números exatos
     const checkboxes = document.querySelectorAll("input[name='numeros']");
     checkboxes.forEach(checkbox => {
       checkbox.addEventListener("change", () => {
@@ -114,18 +114,23 @@
       });
     });
 
-    // Envio do formulário
     const form = document.getElementById("apostaForm");
     const tabelaBody = document.querySelector("#tabelaApostas tbody");
 
     form.addEventListener("submit", function(event) {
       event.preventDefault();
 
+      const data = document.getElementById("data").value;
       const vendedor = document.getElementById("vendedor").value.trim();
       const comprador = document.getElementById("comprador").value.trim();
       const celular = document.getElementById("celular").value.trim();
       const numerosSelecionados = Array.from(document.querySelectorAll("input[name='numeros']:checked"))
         .map(el => parseInt(el.value));
+
+      if (data === "") {
+        alert("A data da aposta é obrigatória.");
+        return;
+      }
 
       if (comprador === "") {
         alert("O nome do comprador é obrigatório.");
@@ -139,15 +144,17 @@
 
       // Salva no Firebase
       database.ref('apostas').push({
+        data,
         vendedor,
         comprador,
         celular,
         numeros: numerosSelecionados
       });
 
-      // Exibe localmente
+      // Exibe na tabela local
       const row = document.createElement("tr");
       row.innerHTML = `
+        <td>${data}</td>
         <td>${vendedor}</td>
         <td>${comprador}</td>
         <td>${celular}</td>
