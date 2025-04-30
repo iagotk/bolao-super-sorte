@@ -14,6 +14,7 @@
     .status-aprovado { color: green; font-weight: bold; }
     .status-pendente { color: orange; font-weight: bold; }
     .export-buttons { margin-top: 10px; margin-bottom: 20px; }
+    .filtros { margin-top: 10px; margin-bottom: 20px; }
   </style>
 </head>
 <body>
@@ -24,6 +25,18 @@
     Total de jogos: <span id="total">0</span> |
     Aprovados: <span id="aprovados">0</span> |
     Pendentes: <span id="pendentes">0</span>
+  </div>
+
+  <div class="filtros">
+    <label>Filtrar por data:</label>
+    <input type="date" id="filtroData">
+    <label style="margin-left: 20px;">Filtrar por status:</label>
+    <select id="filtroStatus">
+      <option value="">Todos</option>
+      <option value="aprovado">Aprovado</option>
+      <option value="pendente">Pendente</option>
+    </select>
+    <button onclick="carregarApostas()">Aplicar Filtro</button>
   </div>
 
   <div class="export-buttons">
@@ -67,6 +80,7 @@
     }
 
     const admins = ["iagotk@yahoo.com.br"];
+    let apostasData = [];
 
     firebase.auth().onAuthStateChanged(user => {
       if (!user || !admins.includes(user.email)) {
@@ -83,25 +97,26 @@
       });
     }
 
-    let apostasData = [];
-
     function carregarApostas() {
       const tabela = document.getElementById("tabelaApostas");
       const totalEl = document.getElementById("total");
       const aprovadosEl = document.getElementById("aprovados");
       const pendentesEl = document.getElementById("pendentes");
+      const filtroData = document.getElementById("filtroData").value;
+      const filtroStatus = document.getElementById("filtroStatus").value;
 
-      firebase.database().ref("apostas").on("value", snapshot => {
+      firebase.database().ref("apostas").once("value", snapshot => {
         tabela.innerHTML = "";
         apostasData = [];
-        let total = 0;
-        let aprovados = 0;
-        let pendentes = 0;
+        let total = 0, aprovados = 0, pendentes = 0;
 
         snapshot.forEach(child => {
           const aposta = child.val();
           const id = child.key;
           const status = aposta.status || "pendente";
+
+          if (filtroData && aposta.data !== filtroData) return;
+          if (filtroStatus && status !== filtroStatus) return;
 
           total++;
           if (status === "aprovado") aprovados++;
