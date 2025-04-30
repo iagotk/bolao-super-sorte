@@ -1,82 +1,27 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Bolão SuperSorte</title>
+  <title>Login - Bolão SuperSorte</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 30px;
-    }
-    input[type="text"], input[type="tel"], input[type="date"] {
-      margin-bottom: 10px;
-      padding: 5px;
-      width: 250px;
-    }
-    .numbers {
-      display: flex;
-      flex-wrap: wrap;
-      max-width: 400px;
-      margin-top: 10px;
-    }
-    .numbers label {
-      width: 50px;
-      margin: 3px;
-      text-align: center;
-    }
-    table {
-      margin-top: 30px;
-      width: 100%;
-      border-collapse: collapse;
-    }
-    table, th, td {
-      border: 1px solid #ccc;
-    }
-    th, td {
-      padding: 8px;
-      text-align: center;
-    }
+    body { font-family: Arial; padding: 40px; max-width: 400px; margin: auto; }
+    input { width: 100%; padding: 10px; margin: 10px 0; }
+    button { width: 100%; padding: 10px; margin-top: 10px; }
+    #mensagem { margin-top: 10px; color: red; text-align: center; }
   </style>
 </head>
 <body>
-  <h1>Cadastro de Aposta - Bolão SuperSorte</h1>
-  <form id="apostaForm">
-    <label>Data da Aposta: *</label><br>
-    <input type="date" id="data" required><br>
+  <h2>Login ou Cadastro</h2>
+  <input type="email" id="email" placeholder="E-mail" required>
+  <input type="password" id="senha" placeholder="Senha" required>
+  <button onclick="login()">Entrar</button>
+  <button onclick="cadastrar()">Cadastrar</button>
+  <p id="mensagem"></p>
 
-    <label>Vendedor:</label><br>
-    <input type="text" id="vendedor"><br>
-
-    <label>Nome do Comprador: *</label><br>
-    <input type="text" id="comprador" required><br>
-
-    <label>Celular do Comprador:</label><br>
-    <input type="tel" id="celular"><br>
-
-    <label>Escolha exatamente <strong>10</strong> números entre 1 e 60:</label>
-    <div class="numbers" id="numeros"></div><br>
-
-    <button type="submit">Salvar Aposta</button>
-  </form>
-
-  <h2>Apostas Registradas (visualização local)</h2>
-  <table id="tabelaApostas">
-    <thead>
-      <tr>
-        <th>Data</th>
-        <th>Vendedor</th>
-        <th>Comprador</th>
-        <th>Celular</th>
-        <th>Números Escolhidos</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <!-- Firebase SDKs -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-database-compat.js"></script>
-
+  <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDj1buTT6ZI0SDC7uflOXmT6xCAwg-e3nA",
@@ -88,83 +33,33 @@
       databaseURL: "https://bolao-supersorte-default-rtdb.firebaseio.com"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-
-    const numerosDiv = document.getElementById("numeros");
-    for (let i = 1; i <= 60; i++) {
-      const label = document.createElement("label");
-      const input = document.createElement("input");
-      input.type = "checkbox";
-      input.name = "numeros";
-      input.value = i;
-      label.appendChild(input);
-      label.append(" " + i);
-      numerosDiv.appendChild(label);
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
     }
 
-    const checkboxes = document.querySelectorAll("input[name='numeros']");
-    checkboxes.forEach(checkbox => {
-      checkbox.addEventListener("change", () => {
-        const selecionados = document.querySelectorAll("input[name='numeros']:checked");
-        if (selecionados.length > 10) {
-          checkbox.checked = false;
-          alert("Você só pode selecionar exatamente 10 números.");
-        }
-      });
-    });
+    function login() {
+      const email = document.getElementById('email').value;
+      const senha = document.getElementById('senha').value;
+      firebase.auth().signInWithEmailAndPassword(email, senha)
+        .then(() => {
+          window.location.href = 'apostas.html';
+        })
+        .catch(err => {
+          document.getElementById('mensagem').innerText = err.message;
+        });
+    }
 
-    const form = document.getElementById("apostaForm");
-    const tabelaBody = document.querySelector("#tabelaApostas tbody");
-
-    form.addEventListener("submit", function(event) {
-      event.preventDefault();
-
-      const data = document.getElementById("data").value;
-      const vendedor = document.getElementById("vendedor").value.trim();
-      const comprador = document.getElementById("comprador").value.trim();
-      const celular = document.getElementById("celular").value.trim();
-      const numerosSelecionados = Array.from(document.querySelectorAll("input[name='numeros']:checked"))
-        .map(el => parseInt(el.value));
-
-      if (data === "") {
-        alert("A data da aposta é obrigatória.");
-        return;
-      }
-
-      if (comprador === "") {
-        alert("O nome do comprador é obrigatório.");
-        return;
-      }
-
-      if (numerosSelecionados.length !== 10) {
-        alert("Você deve selecionar exatamente 10 números.");
-        return;
-      }
-
-      // Salva no Firebase
-      database.ref('apostas').push({
-        data,
-        vendedor,
-        comprador,
-        celular,
-        numeros: numerosSelecionados
-      });
-
-      // Exibe na tabela local
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${data}</td>
-        <td>${vendedor}</td>
-        <td>${comprador}</td>
-        <td>${celular}</td>
-        <td>${numerosSelecionados.join(", ")}</td>
-      `;
-      tabelaBody.appendChild(row);
-
-      alert("Aposta salva com sucesso!");
-      form.reset();
-    });
+    function cadastrar() {
+      const email = document.getElementById('email').value;
+      const senha = document.getElementById('senha').value;
+      firebase.auth().createUserWithEmailAndPassword(email, senha)
+        .then(() => {
+          window.location.href = 'apostas.html';
+        })
+        .catch(err => {
+          document.getElementById('mensagem').innerText = err.message;
+        });
+    }
   </script>
 </body>
 </html>
