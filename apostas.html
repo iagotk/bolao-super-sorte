@@ -1,0 +1,161 @@
+<!-- apostas.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Cadastro de Aposta - Bolão SuperSorte</title>
+  <style>
+    body { font-family: Arial; margin: 30px; }
+    input[type="text"], input[type="tel"], input[type="date"] {
+      margin-bottom: 10px; padding: 5px; width: 250px;
+    }
+    .numbers {
+      display: flex; flex-wrap: wrap; max-width: 400px; margin-top: 10px;
+    }
+    .numbers label {
+      width: 50px; margin: 3px; text-align: center;
+    }
+    table { margin-top: 30px; width: 100%; border-collapse: collapse; }
+    table, th, td { border: 1px solid #ccc; }
+    th, td { padding: 8px; text-align: center; }
+    .logout { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Cadastro de Aposta - Bolão SuperSorte</h1>
+  <button class="logout" onclick="logout()">Sair</button>
+  <form id="apostaForm">
+    <label>Data da Aposta: *</label><br>
+    <input type="date" id="data" required><br>
+    <label>Vendedor:</label><br>
+    <input type="text" id="vendedor"><br>
+    <label>Nome do Comprador: *</label><br>
+    <input type="text" id="comprador" required><br>
+    <label>Celular do Comprador:</label><br>
+    <input type="tel" id="celular"><br>
+    <label>Escolha exatamente <strong>10</strong> números entre 1 e 60:</label>
+    <div class="numbers" id="numeros"></div><br>
+    <button type="submit">Salvar Aposta</button>
+  </form>
+
+  <h2>Apostas Registradas (visualização local)</h2>
+  <table id="tabelaApostas">
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Vendedor</th>
+        <th>Comprador</th>
+        <th>Celular</th>
+        <th>Números Escolhidos</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDj1buTT6ZI0SDC7uflOXmT6xCAwg-e3nA",
+      authDomain: "bolao-supersorte.firebaseapp.com",
+      projectId: "bolao-supersorte",
+      storageBucket: "bolao-supersorte.firebasestorage.app",
+      messagingSenderId: "847695287970",
+      appId: "1:847695287970:web:14bae5edcb9e621e2fe9fb",
+      databaseURL: "https://bolao-supersorte-default-rtdb.firebaseio.com"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    window.onload = function () {
+      firebase.auth().onAuthStateChanged(user => {
+        if (!user) {
+          window.location.href = 'index.html';
+        }
+      });
+    };
+
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = 'index.html';
+      });
+    }
+
+    const numerosDiv = document.getElementById("numeros");
+    for (let i = 1; i <= 60; i++) {
+      const label = document.createElement("label");
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.name = "numeros";
+      input.value = i;
+      label.appendChild(input);
+      label.append(" " + i);
+      numerosDiv.appendChild(label);
+    }
+
+    const checkboxes = document.querySelectorAll("input[name='numeros']");
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener("change", () => {
+        const selecionados = document.querySelectorAll("input[name='numeros']:checked");
+        if (selecionados.length > 10) {
+          checkbox.checked = false;
+          alert("Você só pode selecionar exatamente 10 números.");
+        }
+      });
+    });
+
+    const form = document.getElementById("apostaForm");
+    const tabelaBody = document.querySelector("#tabelaApostas tbody");
+
+    form.addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      const data = document.getElementById("data").value;
+      const vendedor = document.getElementById("vendedor").value.trim();
+      const comprador = document.getElementById("comprador").value.trim();
+      const celular = document.getElementById("celular").value.trim();
+      const numerosSelecionados = Array.from(document.querySelectorAll("input[name='numeros']:checked"))
+        .map(el => parseInt(el.value));
+
+      if (data === "") {
+        alert("A data da aposta é obrigatória.");
+        return;
+      }
+      if (comprador === "") {
+        alert("O nome do comprador é obrigatório.");
+        return;
+      }
+      if (numerosSelecionados.length !== 10) {
+        alert("Você deve selecionar exatamente 10 números.");
+        return;
+      }
+
+      firebase.database().ref('apostas').push({
+        data,
+        vendedor,
+        comprador,
+        celular,
+        numeros: numerosSelecionados
+      });
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${data}</td>
+        <td>${vendedor}</td>
+        <td>${comprador}</td>
+        <td>${celular}</td>
+        <td>${numerosSelecionados.join(", ")}</td>
+      `;
+      tabelaBody.appendChild(row);
+
+      alert("Aposta salva com sucesso!");
+      form.reset();
+    });
+  </script>
+</body>
+</html>
