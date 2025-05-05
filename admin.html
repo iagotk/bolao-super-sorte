@@ -1,4 +1,3 @@
-<!-- admin.html -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -18,199 +17,235 @@
     .total-box { background-color: #e2e3e5; }
     .aprovado-box { background-color: #d4edda; color: #155724; }
     .pendente-box { background-color: #fff3cd; color: #856404; }
-
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     button { margin: 0 5px; padding: 5px 10px; }
     .logout { margin-bottom: 20px; }
     .status-aprovado { color: green; font-weight: bold; }
     .status-pendente { color: orange; font-weight: bold; }
-    .export-buttons { margin-top: 10px; margin-bottom: 20px; }
+    .export-buttons { margin-top: 20px; text-align: center; }
     .filtros { margin-top: 10px; margin-bottom: 20px; text-align: center; }
   </style>
 </head>
 <body>
-  <h1 style="text-align:center">Painel Administrativo</h1>
-  <div style="text-align: center">
-    <button class="logout" onclick="logout()">Sair</button>
-  </div>
 
-  <div class="stats">
-    <div class="stat-box total-box">Total de jogos:<br><span id="total">0</span></div>
-    <div class="stat-box aprovado-box">Aprovados:<br><span id="aprovados">0</span></div>
-    <div class="stat-box pendente-box">Pendentes:<br><span id="pendentes">0</span></div>
-  </div>
+<h1 style="text-align:center">Painel Administrativo</h1>
+<div style="text-align: center">
+  <button class="logout" onclick="logout()">Sair</button>
+</div>
 
-  <div class="filtros">
-    <label>Filtrar por data:</label>
-    <input type="date" id="filtroData">
-    <label style="margin-left: 20px;">Filtrar por status:</label>
-    <select id="filtroStatus">
-      <option value="">Todos</option>
-      <option value="aprovado">Aprovado</option>
-      <option value="pendente">Pendente</option>
-    </select>
-    <label style="margin-left: 20px;">Filtrar por vendedor:</label>
-    <input type="text" id="filtroVendedor" placeholder="Nome do vendedor">
-    <label style="margin-left: 20px;">Filtrar por edição:</label>
-    <input type="text" id="filtroEdicao" placeholder="Edição do Bolão">
-    <button onclick="carregarApostas()">Aplicar Filtro</button>
-  </div>
+<div class="stats">
+  <div class="stat-box total-box">Total de jogos:<br><span id="total">0</span></div>
+  <div class="stat-box aprovado-box">Aprovados:<br><span id="aprovados">0</span></div>
+  <div class="stat-box pendente-box">Pendentes:<br><span id="pendentes">0</span></div>
+</div>
 
-  <div class="export-buttons" style="text-align: center">
-    <label>Definir Edição Atual do Bolão:</label>
-    <input type="text" id="edicaoAtual">
-    <button onclick="salvarEdicaoAtual()">Salvar Edição</button>
-  </div>
+<div class="filtros">
+  <label>Filtrar por data:</label>
+  <input type="date" id="filtroData">
+  <label style="margin-left: 20px;">Filtrar por status:</label>
+  <select id="filtroStatus">
+    <option value="">Todos</option>
+    <option value="aprovado">Aprovado</option>
+    <option value="pendente">Pendente</option>
+  </select>
+  <label style="margin-left: 20px;">Filtrar por vendedor:</label>
+  <input type="text" id="filtroVendedor" placeholder="Nome do vendedor">
+  <label style="margin-left: 20px;">Filtrar por edição:</label>
+  <input type="text" id="filtroEdicao" placeholder="Edição do Bolão">
+  <button onclick="carregarApostas()">Aplicar Filtro</button>
+</div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Data</th>
-        <th>Edição</th>
-        <th>Vendedor</th>
-        <th>Comprador</th>
-        <th>Celular</th>
-        <th>Números</th>
-        <th>Status</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody id="tabelaApostas"></tbody>
-  </table>
+<div class="export-buttons">
+  <label>Definir Edição Atual do Bolão:</label>
+  <input type="text" id="edicaoAtual">
+  <button onclick="salvarEdicaoAtual()">Salvar Edição</button><br><br>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-database-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDj1buTT6ZI0SDC7uflOXmT6xCAwg-e3nA",
-      authDomain: "bolao-supersorte.firebaseapp.com",
-      projectId: "bolao-supersorte",
-      storageBucket: "bolao-supersorte.firebasestorage.app",
-      messagingSenderId: "847695287970",
-      appId: "1:847695287970:web:14bae5edcb9e621e2fe9fb",
-      databaseURL: "https://bolao-supersorte-default-rtdb.firebaseio.com"
-    };
+  <button onclick="exportarParaExcel()">Exportar para Excel</button>
+  <button onclick="exportarParaGoogleDrive()">Exportar para Google Drive</button>
+</div>
 
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
+<table>
+  <thead>
+    <tr>
+      <th>Data</th>
+      <th>Edição</th>
+      <th>Vendedor</th>
+      <th>Comprador</th>
+      <th>Celular</th>
+      <th>Números</th>
+      <th>Status</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody id="tabelaApostas"></tbody>
+</table>
 
-    const admins = ["iagotk@yahoo.com.br"];
-    let apostasData = [];
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDj1buTT6ZI0SDC7uflOXmT6xCAwg-e3nA",
+  authDomain: "bolao-supersorte.firebaseapp.com",
+  projectId: "bolao-supersorte",
+  storageBucket: "bolao-supersorte.firebasestorage.app",
+  messagingSenderId: "847695287970",
+  appId: "1:847695287970:web:14bae5edcb9e621e2fe9fb",
+  databaseURL: "https://bolao-supersorte-default-rtdb.firebaseio.com"
+};
 
-    firebase.auth().onAuthStateChanged(user => {
-      if (!user || !admins.includes(user.email)) {
-        alert("Acesso negado. Somente administradores.");
-        window.location.href = 'index.html';
-      } else {
-        carregarApostas();
-        carregarEdicaoAtual();
-      }
+firebase.initializeApp(firebaseConfig);
+
+const admins = ["iagotk@yahoo.com.br"];
+let apostasData = [];
+
+firebase.auth().onAuthStateChanged(user => {
+  if (!user || !admins.includes(user.email)) {
+    alert("Acesso negado. Somente administradores.");
+    window.location.href = 'index.html';
+  } else {
+    carregarApostas();
+    carregarEdicaoAtual();
+  }
+});
+
+function logout() {
+  firebase.auth().signOut().then(() => {
+    window.location.href = 'index.html';
+  });
+}
+
+function salvarEdicaoAtual() {
+  const edicao = document.getElementById("edicaoAtual").value;
+  firebase.database().ref("configuracoes/edicaoAtual").set(edicao).then(() => {
+    alert("Edição atual salva com sucesso!");
+  });
+}
+
+function carregarEdicaoAtual() {
+  firebase.database().ref("configuracoes/edicaoAtual").once("value").then(snapshot => {
+    document.getElementById("edicaoAtual").value = snapshot.val() || "";
+  });
+}
+
+function carregarApostas() {
+  const tabela = document.getElementById("tabelaApostas");
+  const totalEl = document.getElementById("total");
+  const aprovadosEl = document.getElementById("aprovados");
+  const pendentesEl = document.getElementById("pendentes");
+  const filtroData = document.getElementById("filtroData").value;
+  const filtroStatus = document.getElementById("filtroStatus").value;
+  const filtroVendedor = document.getElementById("filtroVendedor").value.toLowerCase();
+  const filtroEdicao = document.getElementById("filtroEdicao").value;
+
+  firebase.database().ref("apostas").once("value", snapshot => {
+    tabela.innerHTML = "";
+    apostasData = [];
+    let total = 0, aprovados = 0, pendentes = 0;
+
+    snapshot.forEach(child => {
+      const aposta = child.val();
+      const id = child.key;
+      const status = aposta.status || "pendente";
+      const vendedor = aposta.vendedor || "";
+
+      if (filtroData && aposta.data !== filtroData) return;
+      if (filtroStatus && status !== filtroStatus) return;
+      if (filtroVendedor && !vendedor.toLowerCase().includes(filtroVendedor)) return;
+      if (filtroEdicao && aposta.edicao != filtroEdicao) return;
+
+      total++;
+      if (status === "aprovado") aprovados++;
+      else pendentes++;
+
+      apostasData.push({ id, ...aposta });
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${aposta.data || "-"}</td>
+        <td>${aposta.edicao || "-"}</td>
+        <td>${vendedor}</td>
+        <td>${aposta.comprador || "-"}</td>
+        <td>${aposta.celular || "-"}</td>
+        <td>${(aposta.numeros || []).join(", ")}</td>
+        <td class="${status === 'aprovado' ? 'status-aprovado' : 'status-pendente'}">${status}</td>
+        <td>
+          <button onclick="aprovar('${id}')">Aprovar</button>
+          <button onclick="reprovar('${id}')">Reprovar</button>
+          <button onclick="editar('${id}', ${JSON.stringify(aposta.numeros)})">Editar</button>
+        </td>
+      `;
+      tabela.appendChild(tr);
     });
 
-    function logout() {
-      firebase.auth().signOut().then(() => {
-        window.location.href = 'index.html';
-      });
-    }
+    totalEl.textContent = total;
+    aprovadosEl.textContent = aprovados;
+    pendentesEl.textContent = pendentes;
+  });
+}
 
-    function carregarApostas() {
-      const tabela = document.getElementById("tabelaApostas");
-      const totalEl = document.getElementById("total");
-      const aprovadosEl = document.getElementById("aprovados");
-      const pendentesEl = document.getElementById("pendentes");
-      const filtroData = document.getElementById("filtroData").value;
-      const filtroStatus = document.getElementById("filtroStatus").value;
-      const filtroVendedor = document.getElementById("filtroVendedor").value.toLowerCase();
-      const filtroEdicao = document.getElementById("filtroEdicao").value;
+function aprovar(id) {
+  firebase.database().ref("apostas/" + id).update({ status: "aprovado" }).then(() => {
+    carregarApostas();
+  });
+}
 
-      firebase.database().ref("apostas").once("value", snapshot => {
-        tabela.innerHTML = "";
-        apostasData = [];
-        let total = 0, aprovados = 0, pendentes = 0;
+function reprovar(id) {
+  firebase.database().ref("apostas/" + id).update({ status: "pendente" }).then(() => {
+    carregarApostas();
+  });
+}
 
-        snapshot.forEach(child => {
-          const aposta = child.val();
-          const id = child.key;
-          const status = aposta.status || "pendente";
-          const vendedor = aposta.vendedor || "";
+function editar(id, numerosAntigos) {
+  const novos = prompt("Digite 10 números separados por vírgula:", numerosAntigos.join(", "));
+  if (!novos) return;
+  const lista = novos.split(",").map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+  if (lista.length !== 10) {
+    alert("Você deve informar exatamente 10 números válidos.");
+    return;
+  }
+  firebase.database().ref("apostas/" + id).update({ numeros: lista }).then(() => {
+    carregarApostas();
+  });
+}
 
-          if (filtroData && aposta.data !== filtroData) return;
-          if (filtroStatus && status !== filtroStatus) return;
-          if (filtroVendedor && !vendedor.toLowerCase().includes(filtroVendedor)) return;
-          if (filtroEdicao && aposta.edicao != filtroEdicao) return;
+function exportarParaExcel() {
+  if (apostasData.length === 0) {
+    alert("Nenhuma aposta para exportar.");
+    return;
+  }
 
-          total++;
-          if (status === "aprovado") aprovados++;
-          else pendentes++;
+  let csv = "Data,Edição,Vendedor,Comprador,Celular,Números,Status\n";
+  apostasData.forEach(aposta => {
+    csv += `"${aposta.data || ''}","${aposta.edicao || ''}","${aposta.vendedor || ''}","${aposta.comprador || ''}","${aposta.celular || ''}","${(aposta.numeros || []).join(", ")}","${aposta.status}"\n`;
+  });
 
-          apostasData.push({ id, ...aposta });
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "apostas.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${aposta.data || "-"}</td>
-            <td>${aposta.edicao || "-"}</td>
-            <td>${vendedor}</td>
-            <td>${aposta.comprador || "-"}</td>
-            <td>${aposta.celular || "-"}</td>
-            <td>${(aposta.numeros || []).join(", ")}</td>
-            <td class="${status === 'aprovado' ? 'status-aprovado' : 'status-pendente'}">${status}</td>
-            <td>
-              <button onclick="aprovar('${id}')">Aprovar</button>
-              <button onclick="reprovar('${id}')">Reprovar</button>
-              <button onclick="editar('${id}', ${JSON.stringify(aposta.numeros)})">Editar</button>
-            </td>
-          `;
-          tabela.appendChild(tr);
-        });
+function exportarParaGoogleDrive() {
+  if (apostasData.length === 0) {
+    alert("Nenhuma aposta para exportar.");
+    return;
+  }
 
-        totalEl.textContent = total;
-        aprovadosEl.textContent = aprovados;
-        pendentesEl.textContent = pendentes;
-      });
-    }
+  const json = JSON.stringify(apostasData, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "apostas.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
 
-    function salvarEdicaoAtual() {
-      const edicao = document.getElementById("edicaoAtual").value;
-      firebase.database().ref("configuracoes/edicaoAtual").set(edicao).then(() => {
-        alert("Edição atual salva com sucesso!");
-      });
-    }
-
-    function carregarEdicaoAtual() {
-      firebase.database().ref("configuracoes/edicaoAtual").once("value").then(snapshot => {
-        document.getElementById("edicaoAtual").value = snapshot.val() || "";
-      });
-    }
-
-        function aprovar(id) {
-      firebase.database().ref("apostas/" + id).update({ status: "aprovado" }).then(() => {
-        carregarApostas();
-      });
-    }
-
-    function reprovar(id) {
-      firebase.database().ref("apostas/" + id).update({ status: "pendente" }).then(() => {
-        carregarApostas();
-      });
-    }
-
-    function editar(id, numerosAntigos) {
-      const novos = prompt("Digite 10 números separados por vírgula:", numerosAntigos.join(", "));
-      if (!novos) return;
-      const lista = novos.split(",").map(n => parseInt(n.trim())).filter(n => !isNaN(n));
-      if (lista.length !== 10) {
-        alert("Você deve informar exatamente 10 números válidos.");
-        return;
-      }
-      firebase.database().ref("apostas/" + id).update({ numeros: lista }).then(() => {
-        carregarApostas();
-      });
-    }
-  </script>
 </body>
 </html>
-
