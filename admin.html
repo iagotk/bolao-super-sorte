@@ -18,6 +18,10 @@ button { margin: 0 5px; padding: 5px 10px; }
 .status-pendente { color: orange; font-weight: bold; }
 .export-buttons { margin-top: 20px; text-align: center; }
 .filtros { margin-top: 10px; margin-bottom: 20px; text-align: center; }
+.premios-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 20px; }
+.premio-item { background-color: #f4f4f4; padding: 15px 20px; border-radius: 8px; width: 250px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+.premio-item strong { display: block; margin-bottom: 8px; font-size: 14px; color: #555; }
+.premio-item span { font-size: 20px; color: #000; font-weight: bold; }
 </style>
 </head>
 <body>
@@ -77,12 +81,14 @@ button { margin: 0 5px; padding: 5px 10px; }
 
 <!-- Visualizar Prêmios -->
 <div id="premiosSection" style="display:none; margin-top: 40px;">
-<h2>Visualizar Prêmios</h2>
+<h2 style="text-align:center;">Visualizar Prêmios</h2>
+<div style="text-align:center;">
 <label>Edição:</label>
 <input type="text" id="premiosEdicao" placeholder="Deixe em branco para edição atual">
 <button onclick="calcularPremios()">Calcular Prêmios</button>
-<h3>Resultados:</h3>
-<div id="resultadoPremios"></div>
+</div>
+<h3 style="text-align:center;">Resultados:</h3>
+<div id="resultadoPremios" style="text-align:center;"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
@@ -224,9 +230,9 @@ const premios = {
 "10% - Taxa Administrativa": totalArrecadado * 0.10
 };
 
-let html = `<p><strong>Total de Apostas:</strong> ${totalApostas}</p><p><strong>Total Arrecadado:</strong> R$ ${totalArrecadado.toFixed(2)}</p><h4>Divisão:</h4><ul>`;
-for (const [desc, valor] of Object.entries(premios)) html += `<li>${desc}: R$ ${valor.toFixed(2)}</li>`;
-html += "</ul>";
+let html = `<p><strong>Total de Apostas:</strong> ${totalApostas}</p><p><strong>Total Arrecadado:</strong> R$ ${totalArrecadado.toFixed(2)}</p><div class="premios-grid">`;
+for (const [desc, valor] of Object.entries(premios)) html += `<div class="premio-item"><strong>${desc}</strong><span>R$ ${valor.toFixed(2)}</span></div>`;
+html += "</div>";
 document.getElementById("resultadoPremios").innerHTML = html;
 });
 }
