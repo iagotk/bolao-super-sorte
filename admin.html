@@ -52,18 +52,22 @@
     </select>
     <label style="margin-left: 20px;">Filtrar por vendedor:</label>
     <input type="text" id="filtroVendedor" placeholder="Nome do vendedor">
+    <label style="margin-left: 20px;">Filtrar por edição:</label>
+    <input type="text" id="filtroEdicao" placeholder="Edição do Bolão">
     <button onclick="carregarApostas()">Aplicar Filtro</button>
   </div>
 
   <div class="export-buttons" style="text-align: center">
-    <button onclick="exportarCSV()">Exportar para Excel (.CSV)</button>
-    <button onclick="exportarParaDrive()">Enviar para Google Drive (JSON)</button>
+    <label>Definir Edição Atual do Bolão:</label>
+    <input type="text" id="edicaoAtual">
+    <button onclick="salvarEdicaoAtual()">Salvar Edição</button>
   </div>
 
   <table>
     <thead>
       <tr>
         <th>Data</th>
+        <th>Edição</th>
         <th>Vendedor</th>
         <th>Comprador</th>
         <th>Celular</th>
@@ -103,6 +107,7 @@
         window.location.href = 'index.html';
       } else {
         carregarApostas();
+        carregarEdicaoAtual();
       }
     });
 
@@ -120,6 +125,7 @@
       const filtroData = document.getElementById("filtroData").value;
       const filtroStatus = document.getElementById("filtroStatus").value;
       const filtroVendedor = document.getElementById("filtroVendedor").value.toLowerCase();
+      const filtroEdicao = document.getElementById("filtroEdicao").value;
 
       firebase.database().ref("apostas").once("value", snapshot => {
         tabela.innerHTML = "";
@@ -135,6 +141,7 @@
           if (filtroData && aposta.data !== filtroData) return;
           if (filtroStatus && status !== filtroStatus) return;
           if (filtroVendedor && !vendedor.toLowerCase().includes(filtroVendedor)) return;
+          if (filtroEdicao && aposta.edicao != filtroEdicao) return;
 
           total++;
           if (status === "aprovado") aprovados++;
@@ -145,6 +152,7 @@
           const tr = document.createElement("tr");
           tr.innerHTML = `
             <td>${aposta.data || "-"}</td>
+            <td>${aposta.edicao || "-"}</td>
             <td>${vendedor}</td>
             <td>${aposta.comprador || "-"}</td>
             <td>${aposta.celular || "-"}</td>
@@ -164,30 +172,45 @@
         pendentesEl.textContent = pendentes;
       });
     }
-  function aprovar(id) {
-  firebase.database().ref("apostas/" + id).update({ status: "aprovado" }).then(() => {
-    carregarApostas();
-  });
-}
 
-function reprovar(id) {
-  firebase.database().ref("apostas/" + id).update({ status: "pendente" }).then(() => {
-    carregarApostas();
-  });
-}
+    function salvarEdicaoAtual() {
+      const edicao = document.getElementById("edicaoAtual").value;
+      firebase.database().ref("configuracoes/edicaoAtual").set(edicao).then(() => {
+        alert("Edição atual salva com sucesso!");
+      });
+    }
 
-function editar(id, numerosAntigos) {
-  const novos = prompt("Digite 10 números separados por vírgula:", numerosAntigos.join(", "));
-  if (!novos) return;
-  const lista = novos.split(",").map(n => parseInt(n.trim())).filter(n => !isNaN(n));
-  if (lista.length !== 10) {
-    alert("Você deve informar exatamente 10 números válidos.");
-    return;
-  }
-  firebase.database().ref("apostas/" + id).update({ numeros: lista }).then(() => {
-    carregarApostas();
-  });
-}
-</script>
+    function carregarEdicaoAtual() {
+      firebase.database().ref("configuracoes/edicaoAtual").once("value").then(snapshot => {
+        document.getElementById("edicaoAtual").value = snapshot.val() || "";
+      });
+    }
+
+        function aprovar(id) {
+      firebase.database().ref("apostas/" + id).update({ status: "aprovado" }).then(() => {
+        carregarApostas();
+      });
+    }
+
+    function reprovar(id) {
+      firebase.database().ref("apostas/" + id).update({ status: "pendente" }).then(() => {
+        carregarApostas();
+      });
+    }
+
+    function editar(id, numerosAntigos) {
+      const novos = prompt("Digite 10 números separados por vírgula:", numerosAntigos.join(", "));
+      if (!novos) return;
+      const lista = novos.split(",").map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+      if (lista.length !== 10) {
+        alert("Você deve informar exatamente 10 números válidos.");
+        return;
+      }
+      firebase.database().ref("apostas/" + id).update({ numeros: lista }).then(() => {
+        carregarApostas();
+      });
+    }
+  </script>
 </body>
 </html>
+
