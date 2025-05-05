@@ -75,7 +75,7 @@ button { margin: 0 5px; padding: 5px 10px; }
 <tbody id="tabelaApostas"></tbody>
 </table>
 
-<!-- Aba Visualizar Prêmios -->
+<!-- Visualizar Prêmios -->
 <div id="premiosSection" style="display:none; margin-top: 40px;">
 <h2>Visualizar Prêmios</h2>
 <label>Edição:</label>
@@ -131,31 +131,44 @@ document.getElementById("edicaoAtual").value = snapshot.val() || "";
 
 function carregarApostas() {
 const tabela = document.getElementById("tabelaApostas");
-tabela.innerHTML = "";
-apostasData = [];
+const totalEl = document.getElementById("total");
+const aprovadosEl = document.getElementById("aprovados");
+const pendentesEl = document.getElementById("pendentes");
+const filtroData = document.getElementById("filtroData").value;
+const filtroStatus = document.getElementById("filtroStatus").value;
+const filtroVendedor = document.getElementById("filtroVendedor").value.toLowerCase();
+const filtroEdicao = document.getElementById("filtroEdicao").value;
 
 firebase.database().ref("apostas").once("value", snapshot => {
+tabela.innerHTML = "";
+apostasData = [];
 let total = 0, aprovados = 0, pendentes = 0;
 
 snapshot.forEach(child => {
 const aposta = child.val();
 const id = child.key;
-if (document.getElementById("filtroData").value && aposta.data !== document.getElementById("filtroData").value) return;
-if (document.getElementById("filtroStatus").value && aposta.status !== document.getElementById("filtroStatus").value) return;
-if (document.getElementById("filtroVendedor").value && (!aposta.vendedor || aposta.vendedor.toLowerCase().indexOf(document.getElementById("filtroVendedor").value.toLowerCase()) === -1)) return;
-if (document.getElementById("filtroEdicao").value && aposta.edicao != document.getElementById("filtroEdicao").value) return;
+const status = aposta.status || "pendente";
+const vendedor = aposta.vendedor || "";
+
+if (filtroData && aposta.data !== filtroData) return;
+if (filtroStatus && status !== filtroStatus) return;
+if (filtroVendedor && !vendedor.toLowerCase().includes(filtroVendedor)) return;
+if (filtroEdicao && aposta.edicao != filtroEdicao) return;
+
+total++;
+if (status === "aprovado") aprovados++;
+else pendentes++;
 
 apostasData.push({ id, ...aposta });
-total++; if (aposta.status === "aprovado") aprovados++; else pendentes++;
 
 const tr = document.createElement("tr");
-tr.innerHTML = `<td>${aposta.data}</td><td>${aposta.edicao}</td><td>${aposta.vendedor}</td><td>${aposta.comprador}</td><td>${aposta.celular}</td><td>${(aposta.numeros || []).join(", ")}</td><td class="${aposta.status === "aprovado" ? "status-aprovado" : "status-pendente"}">${aposta.status}</td><td><button onclick="aprovar('${id}')">Aprovar</button><button onclick="reprovar('${id}')">Reprovar</button><button onclick="editar('${id}', ${JSON.stringify(aposta.numeros)})">Editar</button></td>`;
+tr.innerHTML = `<td>${aposta.data || "-"}</td><td>${aposta.edicao || "-"}</td><td>${vendedor}</td><td>${aposta.comprador || "-"}</td><td>${aposta.celular || "-"}</td><td>${(aposta.numeros || []).join(", ")}</td><td class="${status === 'aprovado' ? 'status-aprovado' : 'status-pendente'}">${status}</td><td><button onclick="aprovar('${id}')">Aprovar</button><button onclick="reprovar('${id}')">Reprovar</button><button onclick="editar('${id}', ${JSON.stringify(aposta.numeros)})">Editar</button></td>`;
 tabela.appendChild(tr);
 });
 
-document.getElementById("total").innerText = total;
-document.getElementById("aprovados").innerText = aprovados;
-document.getElementById("pendentes").innerText = pendentes;
+totalEl.textContent = total;
+aprovadosEl.textContent = aprovados;
+pendentesEl.textContent = pendentes;
 });
 }
 
