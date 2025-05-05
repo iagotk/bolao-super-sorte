@@ -75,6 +75,7 @@ button { margin: 0 5px; padding: 5px 10px; }
 <tbody id="tabelaApostas"></tbody>
 </table>
 
+<!-- Aba Visualizar Prêmios -->
 <div id="premiosSection" style="display:none; margin-top: 40px;">
 <h2>Visualizar Prêmios</h2>
 <label>Edição:</label>
@@ -91,15 +92,14 @@ button { margin: 0 5px; padding: 5px 10px; }
 const firebaseConfig = {
 apiKey: "AIzaSyDj1buTT6ZI0SDC7uflOXmT6xCAwg-e3nA",
 authDomain: "bolao-supersorte.firebaseapp.com",
+databaseURL: "https://bolao-supersorte-default-rtdb.firebaseio.com",
 projectId: "bolao-supersorte",
-storageBucket: "bolao-supersorte.firebaseapp.com",
+storageBucket: "bolao-supersorte.appspot.com",
 messagingSenderId: "847695287970",
-appId: "1:847695287970:web:14bae5edcb9e621e2fe9fb",
-databaseURL: "https://bolao-supersorte-default-rtdb.firebaseio.com"
+appId: "1:847695287970:web:14bae5edcb9e621e2fe9fb"
 };
 
 firebase.initializeApp(firebaseConfig);
-
 const admins = ["iagotk@yahoo.com.br"];
 let apostasData = [];
 
@@ -140,7 +140,6 @@ let total = 0, aprovados = 0, pendentes = 0;
 snapshot.forEach(child => {
 const aposta = child.val();
 const id = child.key;
-
 if (document.getElementById("filtroData").value && aposta.data !== document.getElementById("filtroData").value) return;
 if (document.getElementById("filtroStatus").value && aposta.status !== document.getElementById("filtroStatus").value) return;
 if (document.getElementById("filtroVendedor").value && (!aposta.vendedor || aposta.vendedor.toLowerCase().indexOf(document.getElementById("filtroVendedor").value.toLowerCase()) === -1)) return;
@@ -208,8 +207,17 @@ const premios = {
 "2,5% - Jogadores com 8 Pontos": totalArrecadado * 0.025,
 "2,5% - Mais Pontos 1º Sorteio": totalArrecadado * 0.025,
 "1% - Sorteio Fim de Ano": totalArrecadado * 0.01,
-"15% - Programa Recompensas": totalArrecadado * 0.15,
+"15% - Programa de Recompensas": totalArrecadado * 0.15,
 "10% - Taxa Administrativa": totalArrecadado * 0.10
 };
 
-let html = `<p><strong>Total de Apostas:</strong> ${totalApostas}</p><p><strong>Total Arrecadado:</strong> R$ ${totalArrecadado.to
+let html = `<p><strong>Total de Apostas:</strong> ${totalApostas}</p><p><strong>Total Arrecadado:</strong> R$ ${totalArrecadado.toFixed(2)}</p><h4>Divisão:</h4><ul>`;
+for (const [desc, valor] of Object.entries(premios)) html += `<li>${desc}: R$ ${valor.toFixed(2)}</li>`;
+html += "</ul>";
+document.getElementById("resultadoPremios").innerHTML = html;
+});
+}
+</script>
+
+</body>
+</html>
