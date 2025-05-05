@@ -19,9 +19,9 @@
 <h1>Cadastro de Apostas</h1>
 <div class="edicao" id="edicaoAtual">Edição Atual: carregando...</div>
 
-<input type="text" id="data" placeholder="Data (AAAA-MM-DD)"><br>
-<input type="text" id="vendedor" placeholder="Vendedor (Obrigatório)"><br>
-<input type="text" id="comprador" placeholder="Comprador (Obrigatório)"><br>
+<input type="text" id="data" placeholder="Data (AAAA-MM-DD)" required><br>
+<input type="text" id="vendedor" placeholder="Vendedor (Obrigatório)" required><br>
+<input type="text" id="comprador" placeholder="Comprador (Obrigatório)" required><br>
 <input type="text" id="celular" placeholder="Celular (Opcional)"><br>
 
 <div class="numeros" id="numeros"></div>
@@ -62,6 +62,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 let usuarioLogado = null;
+let edicaoAtual = "";
 
 firebase.auth().onAuthStateChanged(user => {
   if (!user) {
@@ -69,14 +70,13 @@ firebase.auth().onAuthStateChanged(user => {
     return;
   }
   usuarioLogado = user.email;
-  carregarApostasRegistradas();
+  if (edicaoAtual) carregarApostasRegistradas();
 });
 
-let edicaoAtual = "";
 firebase.database().ref("configuracoes/edicaoAtual").on("value", snapshot => {
   edicaoAtual = snapshot.val() || "Não definida";
   document.getElementById("edicaoAtual").innerText = "Edição Atual: " + edicaoAtual;
-  carregarApostasRegistradas();
+  if (usuarioLogado) carregarApostasRegistradas();
 });
 
 const numerosSelecionados = [];
@@ -109,18 +109,8 @@ function salvarAposta() {
   const comprador = document.getElementById("comprador").value.trim();
   const celular = document.getElementById("celular").value.trim();
 
-  if (!data) {
-    alert("Data é obrigatória.");
-    return;
-  }
-
-  if (!vendedor) {
-    alert("Vendedor é obrigatório.");
-    return;
-  }
-
-  if (!comprador) {
-    alert("Comprador é obrigatório.");
+  if (!data || !vendedor || !comprador) {
+    alert("Preencha todos os campos obrigatórios.");
     return;
   }
 
@@ -147,8 +137,6 @@ function salvarAposta() {
 }
 
 function carregarApostasRegistradas() {
-  if (!usuarioLogado) return;
-
   firebase.database().ref("apostas").on("value", snapshot => {
     const tbody = document.getElementById("apostasRegistradas");
     tbody.innerHTML = "";
