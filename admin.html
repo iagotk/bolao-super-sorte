@@ -1,98 +1,101 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <title>Painel Administrativo</title>
-  <style>
-    body { font-family: Arial; margin: 30px; }
-    .stats { margin-bottom: 20px; display: flex; gap: 20px; justify-content: center; }
-    .stat-box {
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-weight: bold;
-      color: #000;
-      text-align: center;
-      min-width: 120px;
-    }
-    .total-box { background-color: #e2e3e5; }
-    .aprovado-box { background-color: #d4edda; color: #155724; }
-    .pendente-box { background-color: #fff3cd; color: #856404; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    button { margin: 0 5px; padding: 5px 10px; }
-    .logout { margin-bottom: 20px; }
-    .status-aprovado { color: green; font-weight: bold; }
-    .status-pendente { color: orange; font-weight: bold; }
-    .export-buttons { margin-top: 20px; text-align: center; }
-    .filtros { margin-top: 10px; margin-bottom: 20px; text-align: center; }
-  </style>
+<meta charset="UTF-8">
+<title>Painel Administrativo</title>
+<style>
+body { font-family: Arial; margin: 30px; }
+.stats { margin-bottom: 20px; display: flex; gap: 20px; justify-content: center; }
+.stat-box { padding: 10px 20px; border-radius: 8px; font-weight: bold; color: #000; text-align: center; min-width: 120px; }
+.total-box { background-color: #e2e3e5; }
+.aprovado-box { background-color: #d4edda; color: #155724; }
+.pendente-box { background-color: #fff3cd; color: #856404; }
+table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+button { margin: 0 5px; padding: 5px 10px; }
+.logout { margin-bottom: 20px; }
+.status-aprovado { color: green; font-weight: bold; }
+.status-pendente { color: orange; font-weight: bold; }
+.export-buttons { margin-top: 20px; text-align: center; }
+.filtros { margin-top: 10px; margin-bottom: 20px; text-align: center; }
+</style>
 </head>
 <body>
 
 <h1 style="text-align:center">Painel Administrativo</h1>
 <div style="text-align: center">
-  <button class="logout" onclick="logout()">Sair</button>
+<button class="logout" onclick="logout()">Sair</button>
+<button onclick="abrirPremios()">Visualizar Prêmios</button>
 </div>
 
 <div class="stats">
-  <div class="stat-box total-box">Total de jogos:<br><span id="total">0</span></div>
-  <div class="stat-box aprovado-box">Aprovados:<br><span id="aprovados">0</span></div>
-  <div class="stat-box pendente-box">Pendentes:<br><span id="pendentes">0</span></div>
+<div class="stat-box total-box">Total de jogos:<br><span id="total">0</span></div>
+<div class="stat-box aprovado-box">Aprovados:<br><span id="aprovados">0</span></div>
+<div class="stat-box pendente-box">Pendentes:<br><span id="pendentes">0</span></div>
 </div>
 
 <div class="filtros">
-  <label>Filtrar por data:</label>
-  <input type="date" id="filtroData">
-  <label style="margin-left: 20px;">Filtrar por status:</label>
-  <select id="filtroStatus">
-    <option value="">Todos</option>
-    <option value="aprovado">Aprovado</option>
-    <option value="pendente">Pendente</option>
-  </select>
-  <label style="margin-left: 20px;">Filtrar por vendedor:</label>
-  <input type="text" id="filtroVendedor" placeholder="Nome do vendedor">
-  <label style="margin-left: 20px;">Filtrar por edição:</label>
-  <input type="text" id="filtroEdicao" placeholder="Edição do Bolão">
-  <button onclick="carregarApostas()">Aplicar Filtro</button>
+<label>Filtrar por data:</label>
+<input type="date" id="filtroData">
+<label style="margin-left: 20px;">Filtrar por status:</label>
+<select id="filtroStatus">
+<option value="">Todos</option>
+<option value="aprovado">Aprovado</option>
+<option value="pendente">Pendente</option>
+</select>
+<label style="margin-left: 20px;">Filtrar por vendedor:</label>
+<input type="text" id="filtroVendedor" placeholder="Nome do vendedor">
+<label style="margin-left: 20px;">Filtrar por edição:</label>
+<input type="text" id="filtroEdicao" placeholder="Edição do Bolão">
+<button onclick="carregarApostas()">Aplicar Filtro</button>
 </div>
 
 <div class="export-buttons">
-  <label>Definir Edição Atual do Bolão:</label>
-  <input type="text" id="edicaoAtual">
-  <button onclick="salvarEdicaoAtual()">Salvar Edição</button><br><br>
+<label>Definir Edição Atual do Bolão:</label>
+<input type="text" id="edicaoAtual">
+<button onclick="salvarEdicaoAtual()">Salvar Edição</button><br><br>
 
-  <button onclick="exportarParaExcel()">Exportar para Excel</button>
-  <button onclick="exportarParaGoogleDrive()">Exportar para Google Drive</button>
+<button onclick="exportarParaExcel()">Exportar para Excel</button>
+<button onclick="exportarParaGoogleDrive()">Exportar para Google Drive</button>
 </div>
 
 <table>
-  <thead>
-    <tr>
-      <th>Data</th>
-      <th>Edição</th>
-      <th>Vendedor</th>
-      <th>Comprador</th>
-      <th>Celular</th>
-      <th>Números</th>
-      <th>Status</th>
-      <th>Ações</th>
-    </tr>
-  </thead>
-  <tbody id="tabelaApostas"></tbody>
+<thead>
+<tr>
+<th>Data</th>
+<th>Edição</th>
+<th>Vendedor</th>
+<th>Comprador</th>
+<th>Celular</th>
+<th>Números</th>
+<th>Status</th>
+<th>Ações</th>
+</tr>
+</thead>
+<tbody id="tabelaApostas"></tbody>
 </table>
+
+<div id="premiosSection" style="display:none; margin-top: 40px;">
+<h2>Visualizar Prêmios</h2>
+<label>Edição:</label>
+<input type="text" id="premiosEdicao" placeholder="Deixe em branco para edição atual">
+<button onclick="calcularPremios()">Calcular Prêmios</button>
+<h3>Resultados:</h3>
+<div id="resultadoPremios"></div>
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-database-compat.js"></script>
 <script>
 const firebaseConfig = {
-  apiKey: "AIzaSyDj1buTT6ZI0SDC7uflOXmT6xCAwg-e3nA",
-  authDomain: "bolao-supersorte.firebaseapp.com",
-  projectId: "bolao-supersorte",
-  storageBucket: "bolao-supersorte.firebasestorage.app",
-  messagingSenderId: "847695287970",
-  appId: "1:847695287970:web:14bae5edcb9e621e2fe9fb",
-  databaseURL: "https://bolao-supersorte-default-rtdb.firebaseio.com"
+apiKey: "AIzaSyDj1buTT6ZI0SDC7uflOXmT6xCAwg-e3nA",
+authDomain: "bolao-supersorte.firebaseapp.com",
+projectId: "bolao-supersorte",
+storageBucket: "bolao-supersorte.firebaseapp.com",
+messagingSenderId: "847695287970",
+appId: "1:847695287970:web:14bae5edcb9e621e2fe9fb",
+databaseURL: "https://bolao-supersorte-default-rtdb.firebaseio.com"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -101,151 +104,112 @@ const admins = ["iagotk@yahoo.com.br"];
 let apostasData = [];
 
 firebase.auth().onAuthStateChanged(user => {
-  if (!user || !admins.includes(user.email)) {
-    alert("Acesso negado. Somente administradores.");
-    window.location.href = 'index.html';
-  } else {
-    carregarApostas();
-    carregarEdicaoAtual();
-  }
+if (!user || !admins.includes(user.email)) {
+alert("Acesso negado.");
+window.location.href = 'index.html';
+} else {
+carregarApostas();
+carregarEdicaoAtual();
+}
 });
 
 function logout() {
-  firebase.auth().signOut().then(() => {
-    window.location.href = 'index.html';
-  });
+firebase.auth().signOut().then(() => {
+window.location.href = 'index.html';
+});
 }
 
 function salvarEdicaoAtual() {
-  const edicao = document.getElementById("edicaoAtual").value;
-  firebase.database().ref("configuracoes/edicaoAtual").set(edicao).then(() => {
-    alert("Edição atual salva com sucesso!");
-  });
+firebase.database().ref("configuracoes/edicaoAtual").set(document.getElementById("edicaoAtual").value);
 }
 
 function carregarEdicaoAtual() {
-  firebase.database().ref("configuracoes/edicaoAtual").once("value").then(snapshot => {
-    document.getElementById("edicaoAtual").value = snapshot.val() || "";
-  });
+firebase.database().ref("configuracoes/edicaoAtual").once("value").then(snapshot => {
+document.getElementById("edicaoAtual").value = snapshot.val() || "";
+});
 }
 
 function carregarApostas() {
-  const tabela = document.getElementById("tabelaApostas");
-  const totalEl = document.getElementById("total");
-  const aprovadosEl = document.getElementById("aprovados");
-  const pendentesEl = document.getElementById("pendentes");
-  const filtroData = document.getElementById("filtroData").value;
-  const filtroStatus = document.getElementById("filtroStatus").value;
-  const filtroVendedor = document.getElementById("filtroVendedor").value.toLowerCase();
-  const filtroEdicao = document.getElementById("filtroEdicao").value;
+const tabela = document.getElementById("tabelaApostas");
+tabela.innerHTML = "";
+apostasData = [];
 
-  firebase.database().ref("apostas").once("value", snapshot => {
-    tabela.innerHTML = "";
-    apostasData = [];
-    let total = 0, aprovados = 0, pendentes = 0;
+firebase.database().ref("apostas").once("value", snapshot => {
+let total = 0, aprovados = 0, pendentes = 0;
 
-    snapshot.forEach(child => {
-      const aposta = child.val();
-      const id = child.key;
-      const status = aposta.status || "pendente";
-      const vendedor = aposta.vendedor || "";
+snapshot.forEach(child => {
+const aposta = child.val();
+const id = child.key;
 
-      if (filtroData && aposta.data !== filtroData) return;
-      if (filtroStatus && status !== filtroStatus) return;
-      if (filtroVendedor && !vendedor.toLowerCase().includes(filtroVendedor)) return;
-      if (filtroEdicao && aposta.edicao != filtroEdicao) return;
+if (document.getElementById("filtroData").value && aposta.data !== document.getElementById("filtroData").value) return;
+if (document.getElementById("filtroStatus").value && aposta.status !== document.getElementById("filtroStatus").value) return;
+if (document.getElementById("filtroVendedor").value && (!aposta.vendedor || aposta.vendedor.toLowerCase().indexOf(document.getElementById("filtroVendedor").value.toLowerCase()) === -1)) return;
+if (document.getElementById("filtroEdicao").value && aposta.edicao != document.getElementById("filtroEdicao").value) return;
 
-      total++;
-      if (status === "aprovado") aprovados++;
-      else pendentes++;
+apostasData.push({ id, ...aposta });
+total++; if (aposta.status === "aprovado") aprovados++; else pendentes++;
 
-      apostasData.push({ id, ...aposta });
+const tr = document.createElement("tr");
+tr.innerHTML = `<td>${aposta.data}</td><td>${aposta.edicao}</td><td>${aposta.vendedor}</td><td>${aposta.comprador}</td><td>${aposta.celular}</td><td>${(aposta.numeros || []).join(", ")}</td><td class="${aposta.status === "aprovado" ? "status-aprovado" : "status-pendente"}">${aposta.status}</td><td><button onclick="aprovar('${id}')">Aprovar</button><button onclick="reprovar('${id}')">Reprovar</button><button onclick="editar('${id}', ${JSON.stringify(aposta.numeros)})">Editar</button></td>`;
+tabela.appendChild(tr);
+});
 
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${aposta.data || "-"}</td>
-        <td>${aposta.edicao || "-"}</td>
-        <td>${vendedor}</td>
-        <td>${aposta.comprador || "-"}</td>
-        <td>${aposta.celular || "-"}</td>
-        <td>${(aposta.numeros || []).join(", ")}</td>
-        <td class="${status === 'aprovado' ? 'status-aprovado' : 'status-pendente'}">${status}</td>
-        <td>
-          <button onclick="aprovar('${id}')">Aprovar</button>
-          <button onclick="reprovar('${id}')">Reprovar</button>
-          <button onclick="editar('${id}', ${JSON.stringify(aposta.numeros)})">Editar</button>
-        </td>
-      `;
-      tabela.appendChild(tr);
-    });
-
-    totalEl.textContent = total;
-    aprovadosEl.textContent = aprovados;
-    pendentesEl.textContent = pendentes;
-  });
+document.getElementById("total").innerText = total;
+document.getElementById("aprovados").innerText = aprovados;
+document.getElementById("pendentes").innerText = pendentes;
+});
 }
 
-function aprovar(id) {
-  firebase.database().ref("apostas/" + id).update({ status: "aprovado" }).then(() => {
-    carregarApostas();
-  });
-}
-
-function reprovar(id) {
-  firebase.database().ref("apostas/" + id).update({ status: "pendente" }).then(() => {
-    carregarApostas();
-  });
-}
-
+function aprovar(id) { firebase.database().ref("apostas/" + id).update({ status: "aprovado" }).then(carregarApostas); }
+function reprovar(id) { firebase.database().ref("apostas/" + id).update({ status: "pendente" }).then(carregarApostas); }
 function editar(id, numerosAntigos) {
-  const novos = prompt("Digite 10 números separados por vírgula:", numerosAntigos.join(", "));
-  if (!novos) return;
-  const lista = novos.split(",").map(n => parseInt(n.trim())).filter(n => !isNaN(n));
-  if (lista.length !== 10) {
-    alert("Você deve informar exatamente 10 números válidos.");
-    return;
-  }
-  firebase.database().ref("apostas/" + id).update({ numeros: lista }).then(() => {
-    carregarApostas();
-  });
+const novos = prompt("Digite 10 números separados por vírgula:", numerosAntigos.join(", "));
+const lista = novos.split(",").map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+if (lista.length !== 10) return alert("Digite exatamente 10 números.");
+firebase.database().ref("apostas/" + id).update({ numeros: lista }).then(carregarApostas);
 }
 
 function exportarParaExcel() {
-  if (apostasData.length === 0) {
-    alert("Nenhuma aposta para exportar.");
-    return;
-  }
-
-  let csv = "Data,Edição,Vendedor,Comprador,Celular,Números,Status\n";
-  apostasData.forEach(aposta => {
-    csv += `"${aposta.data || ''}","${aposta.edicao || ''}","${aposta.vendedor || ''}","${aposta.comprador || ''}","${aposta.celular || ''}","${(aposta.numeros || []).join(", ")}","${aposta.status}"\n`;
-  });
-
-  const blob = new Blob([csv], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "apostas.csv";
-  a.click();
-  URL.revokeObjectURL(url);
+if (!apostasData.length) return alert("Nenhuma aposta para exportar.");
+let csv = "Data,Edição,Vendedor,Comprador,Celular,Números,Status\n";
+apostasData.forEach(aposta => csv += `"${aposta.data}","${aposta.edicao}","${aposta.vendedor}","${aposta.comprador}","${aposta.celular}","${aposta.numeros.join(", ")}","${aposta.status}"\n`);
+const blob = new Blob([csv], { type: "text/csv" });
+const a = document.createElement("a");
+a.href = URL.createObjectURL(blob);
+a.download = "apostas.csv";
+a.click();
 }
 
 function exportarParaGoogleDrive() {
-  if (apostasData.length === 0) {
-    alert("Nenhuma aposta para exportar.");
-    return;
-  }
-
-  const json = JSON.stringify(apostasData, null, 2);
-  const blob = new Blob([json], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "apostas.json";
-  a.click();
-  URL.revokeObjectURL(url);
+if (!apostasData.length) return alert("Nenhuma aposta para exportar.");
+const json = JSON.stringify(apostasData, null, 2);
+const a = document.createElement("a");
+a.href = URL.createObjectURL(new Blob([json], { type: "application/json" }));
+a.download = "apostas.json";
+a.click();
 }
-</script>
 
-</body>
-</html>
+function abrirPremios() {
+document.getElementById("premiosSection").style.display = "block";
+window.scrollTo(0, document.body.scrollHeight);
+}
+
+function calcularPremios() {
+const edicao = document.getElementById("premiosEdicao").value || document.getElementById("edicaoAtual").value;
+firebase.database().ref("apostas").once("value", snapshot => {
+let totalApostas = 0;
+snapshot.forEach(child => { if (child.val().edicao == edicao) totalApostas++; });
+const totalArrecadado = totalApostas * 30;
+const premios = {
+"53% - 10 Pontos": totalArrecadado * 0.53,
+"6% - Menos Pontos": totalArrecadado * 0.06,
+"5% - Indicador 10 Pontos": totalArrecadado * 0.05,
+"5% - Jogadores com 9 Pontos": totalArrecadado * 0.05,
+"2,5% - Jogadores com 8 Pontos": totalArrecadado * 0.025,
+"2,5% - Mais Pontos 1º Sorteio": totalArrecadado * 0.025,
+"1% - Sorteio Fim de Ano": totalArrecadado * 0.01,
+"15% - Programa Recompensas": totalArrecadado * 0.15,
+"10% - Taxa Administrativa": totalArrecadado * 0.10
+};
+
+let html = `<p><strong>Total de Apostas:</strong> ${totalApostas}</p><p><strong>Total Arrecadado:</strong> R$ ${totalArrecadado.to
