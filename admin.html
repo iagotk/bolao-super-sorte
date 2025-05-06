@@ -252,21 +252,28 @@ calcularIndicacoes();
 window.scrollTo(0, document.body.scrollHeight);
 }
 
+function toggleCompradores(id) {
+const ul = document.getElementById(id);
+ul.style.display = ul.style.display === "none" ? "block" : "none";
+}
+
 function calcularIndicacoes() {
 firebase.database().ref("apostas").once("value", snapshot => {
 let indicacoes = {};
 snapshot.forEach(child => {
 const aposta = child.val();
-const vendedor = aposta.vendedor || "Sem Vendedor";
+const email = aposta.usuario || "Sem Email";
 const comprador = aposta.comprador || "Sem Comprador";
-if (!indicacoes[vendedor]) indicacoes[vendedor] = [];
-indicacoes[vendedor].push(comprador);
+if (!indicacoes[email]) indicacoes[email] = [];
+indicacoes[email].push(comprador);
 });
 
 let html = "";
-for (const vendedor in indicacoes) {
-html += `<h3>${vendedor} (${indicacoes[vendedor].length} compras)</h3><ul>`;
-indicacoes[vendedor].forEach(comprador => { html += `<li>${comprador}</li>`; });
+for (const email in indicacoes) {
+const compradores = indicacoes[email];
+const id = "compradores_" + email.replace(/[^a-zA-Z0-9]/g, "_");
+html += `<h3>${email} (${compradores.length} vendas) <button onclick="toggleCompradores('${id}')">Mostrar</button></h3><ul id="${id}" style="display:none;">`;
+compradores.forEach(c => html += `<li>${c}</li>`);
 html += "</ul><br>";
 }
 document.getElementById("resultadoIndicacoes").innerHTML = html;
@@ -295,13 +302,12 @@ const premios = [
 ];
 
 let html = `<p><strong>Total de Apostas Aprovadas:</strong> ${totalAprovadas}</p><p><strong>Total Arrecadado:</strong> R$ ${totalArrecadado.toFixed(2)}</p><div class="premios-grid">`;
-premios.forEach((p, index) => {
-html += `<div class="premio-item cor${index+1}">${p.titulo}<span>R$ ${p.valor.toFixed(2)}</span></div>`;
-});
+premios.forEach((p, index) => html += `<div class="premio-item cor${index+1}">${p.titulo}<span>R$ ${p.valor.toFixed(2)}</span></div>`);
 html += "</div>";
 document.getElementById("resultadoPremios").innerHTML = html;
 });
 }
 </script>
+
 </body>
 </html>
