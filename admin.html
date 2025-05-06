@@ -239,9 +239,14 @@ window.scrollTo(0, document.body.scrollHeight);
 function calcularPremios() {
 const edicao = document.getElementById("premiosEdicao").value || document.getElementById("edicaoAtual").value;
 firebase.database().ref("apostas").once("value", snapshot => {
-let totalApostas = 0;
-snapshot.forEach(child => { if (child.val().edicao == edicao) totalApostas++; });
-const totalArrecadado = totalApostas * 30;
+let totalAprovadas = 0;
+snapshot.forEach(child => {
+const aposta = child.val();
+if (aposta.edicao == edicao && aposta.status === "aprovado") {
+totalAprovadas++;
+}
+});
+const totalArrecadado = totalAprovadas * 30;
 
 const premios = [
 { titulo: "10 Pontos", valor: totalArrecadado * 0.53 },
@@ -255,7 +260,7 @@ const premios = [
 { titulo: "Taxa Administrativa", valor: totalArrecadado * 0.10 }
 ];
 
-let html = `<p><strong>Total de Apostas:</strong> ${totalApostas}</p><p><strong>Total Arrecadado:</strong> R$ ${totalArrecadado.toFixed(2)}</p><div class="premios-grid">`;
+let html = `<p><strong>Total de Apostas Aprovadas:</strong> ${totalAprovadas}</p><p><strong>Total Arrecadado:</strong> R$ ${totalArrecadado.toFixed(2)}</p><div class="premios-grid">`;
 
 premios.forEach((p, index) => {
 html += `<div class="premio-item cor${index+1}">${p.titulo}<span>R$ ${p.valor.toFixed(2)}</span></div>`;
