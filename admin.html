@@ -38,6 +38,7 @@ button { margin: 0 5px; padding: 5px 10px; }
 <div style="text-align: center">
 <button class="logout" onclick="logout()">Sair</button>
 <button onclick="abrirPremios()">Visualizar Prêmios</button>
+<button onclick="abrirIndicacoes()">Indicações</button>
 </div>
 
 <div class="stats">
@@ -113,6 +114,12 @@ button { margin: 0 5px; padding: 5px 10px; }
 
 <h3 style="text-align:center;">Resultados:</h3>
 <div id="resultadoPremios" style="text-align:center;"></div>
+</div>
+
+<!-- Indicações -->
+<div id="indicacoesSection" style="display:none; margin-top: 40px;">
+<h2 style="text-align:center;">Indicações</h2>
+<div id="resultadoIndicacoes" style="text-align:left; max-width: 800px; margin: 0 auto; background: #f9f9f9; padding: 20px; border-radius: 8px;"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
@@ -233,7 +240,40 @@ a.click();
 
 function abrirPremios() {
 document.getElementById("premiosSection").style.display = "block";
+document.getElementById("indicacoesSection").style.display = "none";
 window.scrollTo(0, document.body.scrollHeight);
+}
+
+function abrirIndicacoes() {
+document.getElementById("indicacoesSection").style.display = "block";
+document.getElementById("premiosSection").style.display = "none";
+calcularIndicacoes();
+window.scrollTo(0, document.body.scrollHeight);
+}
+
+function calcularIndicacoes() {
+firebase.database().ref("apostas").once("value", snapshot => {
+let indicacoes = {};
+snapshot.forEach(child => {
+const aposta = child.val();
+const vendedor = aposta.vendedor || "Sem Vendedor";
+const comprador = aposta.comprador || "Sem Comprador";
+
+if (!indicacoes[vendedor]) indicacoes[vendedor] = [];
+indicacoes[vendedor].push(comprador);
+});
+
+let html = "";
+for (const vendedor in indicacoes) {
+html += `<h3>${vendedor} (${indicacoes[vendedor].length} compras)</h3><ul>`;
+indicacoes[vendedor].forEach(comprador => {
+html += `<li>${comprador}</li>`;
+});
+html += "</ul><br>";
+}
+
+document.getElementById("resultadoIndicacoes").innerHTML = html;
+});
 }
 
 function calcularPremios() {
@@ -242,12 +282,9 @@ firebase.database().ref("apostas").once("value", snapshot => {
 let totalAprovadas = 0;
 snapshot.forEach(child => {
 const aposta = child.val();
-if (aposta.edicao == edicao && aposta.status === "aprovado") {
-totalAprovadas++;
-}
+if (aposta.edicao == edicao && aposta.status === "aprovado") totalAprovadas++;
 });
 const totalArrecadado = totalAprovadas * 30;
-
 const premios = [
 { titulo: "10 Pontos", valor: totalArrecadado * 0.53 },
 { titulo: "Menos Pontos", valor: totalArrecadado * 0.06 },
@@ -271,6 +308,5 @@ document.getElementById("resultadoPremios").innerHTML = html;
 });
 }
 </script>
-
 </body>
 </html>
