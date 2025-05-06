@@ -77,6 +77,7 @@ button { margin: 0 5px; padding: 5px 10px; }
 <tr>
 <th>Data</th>
 <th>Edição</th>
+<th>Email do Usuário</th>
 <th>Vendedor</th>
 <th>Comprador</th>
 <th>Celular</th>
@@ -199,7 +200,7 @@ else pendentes++;
 apostasData.push({ id, ...aposta });
 
 const tr = document.createElement("tr");
-tr.innerHTML = `<td>${aposta.data || "-"}</td><td>${aposta.edicao || "-"}</td><td>${vendedor}</td><td>${aposta.comprador || "-"}</td><td>${aposta.celular || "-"}</td><td>${(aposta.numeros || []).join(", ")}</td><td class="${status === 'aprovado' ? 'status-aprovado' : 'status-pendente'}">${status}</td><td><button onclick="aprovar('${id}')">Aprovar</button><button onclick="reprovar('${id}')">Reprovar</button><button onclick="editar('${id}', ${JSON.stringify(aposta.numeros)})">Editar</button></td>`;
+tr.innerHTML = `<td>${aposta.data || "-"}</td><td>${aposta.edicao || "-"}</td><td>${aposta.usuario || "-"}</td><td>${vendedor}</td><td>${aposta.comprador || "-"}</td><td>${aposta.celular || "-"}</td><td>${(aposta.numeros || []).join(", ")}</td><td class="${status === 'aprovado' ? 'status-aprovado' : 'status-pendente'}">${status}</td><td><button onclick="aprovar('${id}')">Aprovar</button><button onclick="reprovar('${id}')">Reprovar</button><button onclick="editar('${id}', ${JSON.stringify(aposta.numeros)})">Editar</button></td>`;
 tabela.appendChild(tr);
 });
 
@@ -220,8 +221,8 @@ firebase.database().ref("apostas/" + id).update({ numeros: lista }).then(carrega
 
 function exportarParaExcel() {
 if (!apostasData.length) return alert("Nenhuma aposta para exportar.");
-let csv = "Data,Edição,Vendedor,Comprador,Celular,Números,Status\n";
-apostasData.forEach(aposta => csv += `"${aposta.data}","${aposta.edicao}","${aposta.vendedor}","${aposta.comprador}","${aposta.celular}","${aposta.numeros.join(", ")}","${aposta.status}"\n`);
+let csv = "Data,Edição,Email do Usuário,Vendedor,Comprador,Celular,Números,Status\n";
+apostasData.forEach(aposta => csv += `"${aposta.data}","${aposta.edicao}","${aposta.usuario}","${aposta.vendedor}","${aposta.comprador}","${aposta.celular}","${aposta.numeros.join(", ")}","${aposta.status}"\n`);
 const blob = new Blob([csv], { type: "text/csv" });
 const a = document.createElement("a");
 a.href = URL.createObjectURL(blob);
@@ -258,7 +259,6 @@ snapshot.forEach(child => {
 const aposta = child.val();
 const vendedor = aposta.vendedor || "Sem Vendedor";
 const comprador = aposta.comprador || "Sem Comprador";
-
 if (!indicacoes[vendedor]) indicacoes[vendedor] = [];
 indicacoes[vendedor].push(comprador);
 });
@@ -266,12 +266,9 @@ indicacoes[vendedor].push(comprador);
 let html = "";
 for (const vendedor in indicacoes) {
 html += `<h3>${vendedor} (${indicacoes[vendedor].length} compras)</h3><ul>`;
-indicacoes[vendedor].forEach(comprador => {
-html += `<li>${comprador}</li>`;
-});
+indicacoes[vendedor].forEach(comprador => { html += `<li>${comprador}</li>`; });
 html += "</ul><br>";
 }
-
 document.getElementById("resultadoIndicacoes").innerHTML = html;
 });
 }
@@ -298,11 +295,9 @@ const premios = [
 ];
 
 let html = `<p><strong>Total de Apostas Aprovadas:</strong> ${totalAprovadas}</p><p><strong>Total Arrecadado:</strong> R$ ${totalArrecadado.toFixed(2)}</p><div class="premios-grid">`;
-
 premios.forEach((p, index) => {
 html += `<div class="premio-item cor${index+1}">${p.titulo}<span>R$ ${p.valor.toFixed(2)}</span></div>`;
 });
-
 html += "</div>";
 document.getElementById("resultadoPremios").innerHTML = html;
 });
